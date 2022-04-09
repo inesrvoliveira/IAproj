@@ -9,7 +9,6 @@
 import sys
 from search import Problem, Node, astar_search, breadth_first_tree_search, depth_first_tree_search, greedy_search, recursive_best_first_search
 
-
 class NumbrixState:
     state_id = 0
 
@@ -20,20 +19,24 @@ class NumbrixState:
 
     def __lt__(self, other):
         return self.id < other.id
+
+    def goal_state(self):
+        #find the goal state in this stata (that is the init_state)
+        return 
         
     # TODO: outros metodos da classe
 
 
 class Board:
     """ Representação interna de um tabuleiro de Numbrix. """
-
     def __init__(self, filename, board):
         self.filename = filename
         self.board = board
+        self.N = len(board)
     
     def get_number(self, row: int, col: int) -> int:
         """ Devolve o valor na respetiva posição do tabuleiro. """
-        if(row < len(self.board) and col < len(self.board) ):
+        if(row < self.N and col < self.N ):
             return self.board[row][col]
         else:
             raise ValueError('The row or column are out of range.\n')
@@ -43,15 +46,15 @@ class Board:
         respectivamente. """
         lst = []
         #low position
-        if(row == len(self.board) - 1):
+        if(row == self.N - 1):
             lst.append(None)
         else:
-            lst.append(self.board[row+1][col])
+            lst.append(self.get_number(row+1,col))
         #up position
         if(row == 0):
             lst.append(None)
         else:
-            lst.append(self.board[row-1][col])
+            lst.append(self.get_number(row-1,col))
         
         return tuple(lst)
     
@@ -63,27 +66,46 @@ class Board:
         if(col == 0):
             lst.append(None)
         else:
-            lst.append(self.board[row][col-1])
+            lst.append(self.get_number(row,col-1))
         #right position
-        if(col == len(self.board) - 1):
+        if(col == self.N - 1):
             lst.append(None)
         else:
-            lst.append(self.board[row][col+1])
+            lst.append(self.get_number(row,col+1))
         
         return tuple(lst)
     
     def to_string(self) -> str:
         s = str()
-        for i in range(len(self.board)):
-            for j in range(len(self.board)):
-                s += str(self.board[i][j])
-                if (j == len(self.board)-1):
+        for i in range(self.N):
+            for j in range(self.N):
+                s += str(self.get_number(i,j))
+                if (j == self.N-1 and i != self.N-1):
                     s+= '\n'
                 else:
                     s+= ' '
         return s
 
-    
+    def get_actions(self):
+        # list with the numbers (from 1 to NxN) that can be used fill the board
+        numbers = list(range(1,self.N*self.N+1))
+        actions=[]
+        for i in range(self.N):
+            for j in range(self.N):
+                if(self.get_number(i,j) != 0):
+                    numbers.remove(self.get_number(i,j))
+        for i in range(self.N):
+            for j in range(self.N):
+                if(self.get_number(i,j) == 0):
+                    for k in range(len(numbers)):
+                        actions.append((i,j,numbers[k]))
+        return actions
+
+    def do_action(self, action):
+        self.board[action[0]][action[1]] = action[2]
+
+
+
     @staticmethod    
     def parse_instance(filename: str):
         """ Lê o ficheiro cujo caminho é passado como argumento e retorna
@@ -119,29 +141,31 @@ class Board:
 class Numbrix(Problem):
     def __init__(self, board: Board):
         """ O construtor especifica o estado inicial. """
-        # TODO
-        pass
+        self.init_state = NumbrixState(board)
 
     def actions(self, state: NumbrixState):
         """ Retorna uma lista de ações que podem ser executadas a
         partir do estado passado como argumento. """
-        # TODO
-        pass
+        return state.board.get_actions()
 
     def result(self, state: NumbrixState, action):
         """ Retorna o estado resultante de executar a 'action' sobre
         'state' passado como argumento. A ação a executar deve ser uma
         das presentes na lista obtida pela execução de 
         self.actions(state). """
-        # TODO
-        pass
+        actions = self.actions(state)
+        new_state = NumbrixState(state.board)
+        if(action in actions):
+            new_state.board.do_action(action)
+            return new_state
+        else:
+            raise ValueError('This action is not possible.\n')
 
     def goal_test(self, state: NumbrixState):
         """ Retorna True se e só se o estado passado como argumento é
         um estado objetivo. Deve verificar se todas as posições do tabuleiro 
         estão preenchidas com uma sequência de números adjacentes. """
-        # TODO
-        pass
+        return state == self.init_state.goal_state()
 
     def h(self, node: Node):
         """ Função heuristica utilizada para a procura A*. """
@@ -164,11 +188,25 @@ if __name__ == "__main__":
     else:
 	    print("Missing the name of the input file.")
 
-    #for testing
-    board = Board.parse_instance(filename)
+    init_board = Board.parse_instance(filename)
 
-    print("Initial:\n", board.to_string(), sep="")
+    problem = Numbrix(init_board)
 
-    print(board.adjacent_vertical_numbers(0, 2))
-    print(board.adjacent_horizontal_numbers(0, 2))
+    board = init_board
+
+    # Criar um estado com a configuração inicial:
+    s0 = NumbrixState(board)
+    print("Initial:\n", s0.board.to_string(), sep="")
+    # Aplicar as ações que resolvem a instância
+    s1 = problem.result(s0, (2, 2, 1))
+    s2 = problem.result(s1, (0, 2, 3))
+    s3 = problem.result(s2, (0, 1, 4))
+    s4 = problem.result(s3, (1, 1, 5))
+    s5 = problem.result(s4, (2, 0, 7))
+    s6 = problem.result(s5, (1, 0, 8))
+    s7 = problem.result(s6, (0, 0, 9))
+    # Verificar se foi atingida a solução
+    print("Is goal?", problem.goal_test(s7))
+    print("Solution:\n", s7.board.to_string(), sep="")
+
     pass
