@@ -7,7 +7,8 @@
 # 89465 Ines Oliveira
 
 import sys
-from search import Problem, Node, astar_search, breadth_first_tree_search, depth_first_tree_search, greedy_search, recursive_best_first_search
+import copy
+from search import Problem, Node, astar_search, breadth_first_tree_search, depth_first_graph_search, greedy_search, recursive_best_first_search
 
 class NumbrixState:
     state_id = 0
@@ -28,6 +29,9 @@ class NumbrixState:
 
     def is_goal(self):
     #checks if the board has one sequence 
+        print("GOAL:")
+        print(self.board.is_goal_board())
+        print(self.board.to_string())
         return self.board.is_goal_board()
         
 
@@ -129,12 +133,14 @@ class Board:
                 if(self.get_number(i,j) == number):
                     return [i,j]
 
-        raise ValueError('The number {0} is not on the board\n'.format(number))
+        return []
                 
-
     def is_goal_board(self):
-        #looks for number 1 in the board
+        #searches for number 1 in the board
         lst = self.search_number_board(1)
+        # if lst [] means that the number is not on the board, so is not goal yet
+        if(lst == []):
+            return False
         i = lst[0]
         j = lst[1]
         # see if the board has a continuos sequence
@@ -186,7 +192,7 @@ class Board:
 class Numbrix(Problem):
     def __init__(self, board: Board):
         """ O construtor especifica o estado inicial. """
-        self.init_state = NumbrixState(board)
+        self.initial = NumbrixState(board)
 
     def actions(self, state: NumbrixState):
         """ Retorna uma lista de ações que podem ser executadas a
@@ -199,17 +205,19 @@ class Numbrix(Problem):
         das presentes na lista obtida pela execução de 
         self.actions(state). """
         actions = self.actions(state)
-        new_state = NumbrixState(state.board)
+        new_state = copy.deepcopy(NumbrixState(state.board))
         if(action in actions):
             new_state.do_action(action)
             return new_state
         else:
-            raise ValueError('This action is not possible.\n')
+            print("This action is not possible.\n")
+            #raise ValueError('This action is not possible.\n')
 
     def goal_test(self, state: NumbrixState):
         """ Retorna True se e só se o estado passado como argumento é
         um estado objetivo. Deve verificar se todas as posições do tabuleiro 
         estão preenchidas com uma sequência de números adjacentes. """
+        
         return state.is_goal()
 
     def h(self, node: Node):
@@ -236,46 +244,9 @@ if __name__ == "__main__":
 
     problem = Numbrix(init_board)
 
-    board = init_board
-
-    # Criar um estado com a configuração inicial:
-    s0 = NumbrixState(board)
-    print("Initial:\n", s0.board.to_string(), sep="")
-    # Aplicar as ações que resolvem a instância
-    s1 = problem.result(s0, (0, 0, 21))
-    s2 = problem.result(s1, (0, 1, 22))
-    s3 = problem.result(s2, (0, 2, 23))
-    s4 = problem.result(s3, (0, 3, 24))
-    s5 = problem.result(s4, (0, 4, 25))
-    s6 = problem.result(s5, (0, 5, 26))
-
-    s8 = problem.result(s6, (1, 0, 20))
-    s9 = problem.result(s8, (1, 1, 19))
-    s10 = problem.result(s9, (1, 2, 12))
-    s11 = problem.result(s10, (1, 4, 28))
-    s12 = problem.result(s11, (2, 0, 1))
-    s13 = problem.result(s12, (2, 1, 18))
-    s14 = problem.result(s13, (2, 2, 13))
-    s15 = problem.result(s14, (2, 3, 10))
-    s16 = problem.result(s15, (2, 4, 29))
-    s17 = problem.result(s16, (3, 0, 2))
-    s18 = problem.result(s17, (3, 1, 17))
-    s19 = problem.result(s18, (3, 2, 14))
-    s20 = problem.result(s19, (3, 3, 9))
-    s21 = problem.result(s20, (3, 4, 36))
-    s22 = problem.result(s21, (3, 5, 31))
-    s23 = problem.result(s22, (4, 0, 3))
-    s24 = problem.result(s23, (4, 1, 16))
-    s25 = problem.result(s24, (4, 3, 8))
-    s26 = problem.result(s25, (4, 5, 32))
-    s27 = problem.result(s26, (5, 0, 4))
-    s28 = problem.result(s27, (5, 1, 5))
-    s29 = problem.result(s28, (5, 2, 6))
-    s30 = problem.result(s29, (5, 3, 7))
-    s31 = problem.result(s30, (5, 4, 34))
-    s32 = problem.result(s31, (5, 5, 33))
-
+    # Obter o nó solução usando a procura A*:
+    goal_node = depth_first_graph_search(problem)
     # Verificar se foi atingida a solução
-    print("Is goal?", problem.goal_test(s32))
-    print("Solution:\n", s32.board.to_string(), sep="")
+    print("Is goal?", problem.goal_test(goal_node.state))
+    print("Solution:\n", goal_node.state.board.to_string(), sep="")
 
