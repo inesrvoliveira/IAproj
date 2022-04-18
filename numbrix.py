@@ -44,6 +44,8 @@ class Board:
         self.N = len(board)
         #numbers not on the board yet
         self.numbers_list = [] 
+        #possible actions for each number in the list
+        self.possible_actions = []
     
     def get_number(self, row: int, col: int) -> int:
         """ Devolve o valor na respetiva posição do tabuleiro. """
@@ -106,14 +108,33 @@ class Board:
                     self.numbers_list.remove(self.get_number(i,j))
         return
     
+    def verify_adj_number(self, row,col, number):
+        #verify if the adjacent numbers (horizontal and veritcal) are the previous number or the next number 
+        adj_horiz = self.adjacent_vertical_numbers(row,col)
+        adj_vert = self.adjacent_horizontal_numbers(row,col)
+        if (adj_horiz[0] == number-1 or adj_horiz[0] == number+1 or adj_horiz[1] == number-1 or adj_horiz[1] == number+1 or adj_vert[0] == number-1 or adj_vert[0] == number+1 or adj_vert[1] == number-1 or adj_vert[1] == number+1):
+            return True
+        else:
+            return False
+
     def get_actions_board(self):
         actions=[]
+        first_time = True 
+        actions_aux=[]
+        adj_horiz = ()
+        adj_vert = ()
         self.set_numbers_list()
-        for i in range(self.N):
-            for j in range(self.N):
-                if(self.get_number(i,j) == 0):
-                    for k in range(len(self.numbers_list)):
-                        actions.append((i,j,self.numbers_list[k]))
+        for h in self.numbers_list:
+            for i in range(self.N):
+                for j in range(self.N):
+                    if self.get_number(i,j) == 0 and self.verify_adj_number(i,j,h):
+                        actions_aux.append((i,j,h))  
+            
+            self.possible_actions.append(actions_aux)
+            if len(actions_aux) < len(actions) or first_time:
+                actions = copy.deepcopy(actions_aux) 
+                first_time = False   
+        print(actions)          
         return actions
 
     def do_action_board(self, action):
@@ -217,12 +238,11 @@ class Numbrix(Problem):
         """ Retorna True se e só se o estado passado como argumento é
         um estado objetivo. Deve verificar se todas as posições do tabuleiro 
         estão preenchidas com uma sequência de números adjacentes. """
-        
         return state.is_goal()
 
     def h(self, node: Node):
         """ Função heuristica utilizada para a procura A*. """
-        # TODO
+        #fazer ideia
         pass
     
 
@@ -245,7 +265,7 @@ if __name__ == "__main__":
     problem = Numbrix(init_board)
 
     # Obter o nó solução usando a procura A*:
-    goal_node = depth_first_graph_search(problem)
+    goal_node = greedy_search(problem)
     # Verificar se foi atingida a solução
     print("Is goal?", problem.goal_test(goal_node.state))
     print("Solution:\n", goal_node.state.board.to_string(), sep="")
