@@ -37,15 +37,14 @@ class NumbrixState:
 
 class Board:
     """ Representação interna de um tabuleiro de Numbrix. """
-    def __init__(self, filename, board):
-        self.filename = filename
+    def __init__(self, board):
         self.board_grid = board
         #size of the line and column of the board 
         self.N = len(board)
         #numbers not on the board yet
         self.numbers_list = [] 
-        #possible actions for each number in the list
-        self.possible_actions = []
+        #number on the board
+        self.numbers_on_list = []
     
     def get_number(self, row: int, col: int) -> int:
         """ Devolve o valor na respetiva posição do tabuleiro. """
@@ -105,7 +104,9 @@ class Board:
         for i in range(self.N):
             for j in range(self.N):
                 if(self.get_number(i,j) != 0):
+                    self.numbers_on_list.append(self.get_number(i,j))
                     self.numbers_list.remove(self.get_number(i,j))
+        self.numbers_on_list.sort()
         return
     
     def verify_adj_number(self, row,col, number):
@@ -121,8 +122,6 @@ class Board:
         actions=[]
         first_time = True 
         actions_aux=[]
-        adj_horiz = ()
-        adj_vert = ()
         self.set_numbers_list()
         for h in self.numbers_list:
             for i in range(self.N):
@@ -130,7 +129,6 @@ class Board:
                     if self.get_number(i,j) == 0 and self.verify_adj_number(i,j,h):
                         actions_aux.append((i,j,h))  
             
-            self.possible_actions.append(actions_aux)
             if len(actions_aux) < len(actions) or first_time:
                 actions = copy.deepcopy(actions_aux) 
                 first_time = False   
@@ -207,7 +205,7 @@ class Board:
 
         file.close()
         #print(board)
-        return Board(filename, board)
+        return Board(board)
 
 
 class Numbrix(Problem):
@@ -242,8 +240,31 @@ class Numbrix(Problem):
 
     def h(self, node: Node):
         """ Função heuristica utilizada para a procura A*. """
-        #fazer ideia
-        pass
+        board = node.state.board
+        board.set_numbers_list()
+        smallest_number_played = board.numbers_on_list[0]
+        aux0 = board.N * board.N
+        aux1 = 0
+        j = 0
+        x1=0
+        x2=0
+        y1=0
+        y2=0
+        for i in range(len(board.numbers_on_list)):
+            aux1 = board.numbers_on_list[i] - smallest_number_played
+            if (aux0 > aux1):
+                aux0 = copy.deepcopy(aux1)
+                j = i
+        for y in range(board.N):
+            for x in range(board.N):
+                if board.board_grid[y][x] == smallest_number_played:
+                    x1 = x
+                    y1 = y
+                if board.board_grid[y][x] == board.numbers_on_list[j]:
+                    x2 = x
+                    y2 = y
+        h = ( (x1 - x2)**2 + (y1 - y2)**2 )**2
+        return h
     
 
 
@@ -265,8 +286,9 @@ if __name__ == "__main__":
     problem = Numbrix(init_board)
 
     # Obter o nó solução usando a procura A*:
-    goal_node = greedy_search(problem)
+    goal_node = depth_first_graph_search(problem)
     # Verificar se foi atingida a solução
-    print("Is goal?", problem.goal_test(goal_node.state))
-    print("Solution:\n", goal_node.state.board.to_string(), sep="")
+    #print("Is goal?", problem.goal_test(goal_node.state))
+    
+    print(goal_node.state.board.to_string(),end="", sep="")
 
