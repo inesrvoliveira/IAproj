@@ -109,7 +109,6 @@ class Board:
         return
     
     def verify_adj_numbers_pos(self,i,j,adj_vert,adj_horiz,number):
-        #verifies if the adj numbers are continues, like for example 4 5 6
         actions = []
         if(adj_vert[0] != None):
             #print("ENTREI1!")
@@ -178,21 +177,25 @@ class Board:
 
     def verify_possible_pos(self, adj_number, coord , number, number_next_on, i, j):
         #verifica a posicao adj
+        #print(self.to_string()) 
         if (i<0 or j<0):
             return False
-
-        #Manhattan distance
         if(adj_number == 0): # se for uma posiçao possivel para por o numero seguinte
             md_aux = abs(i-coord[0]) + abs(j-coord[1])
+            #print(adj_number)
+            #print("na linha {} na coluna {}".format(i,j))
+            #print("md_aux")
+            #print(md_aux)
+            #print("sub")
+            #print(abs(number - number_next_on)-1)
             if(md_aux <= abs(number - number_next_on)-1):
                 return True
         return False
 
     def is_island_pos(self, i, j):
-        #verifies if the position (i,j) is an isolated position (all the adj are different from 0)
         adj_vert = self.adjacent_vertical_numbers(i,j)
         adj_horiz = self.adjacent_horizontal_numbers(i,j)
-        
+        #print("adj_vert[0]: {0}, adj_vert[1]: {1}, adj_horiz[0]: {2}, adj_horiz[1]: {3} ".format(adj_vert[0], adj_vert[1], adj_horiz[0], adj_horiz[1]))
         if(adj_vert[0] == 0 or adj_vert[1] == 0 or adj_horiz[0] == 0 or adj_horiz[1] == 0):
             return False
         
