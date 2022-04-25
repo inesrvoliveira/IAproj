@@ -43,7 +43,7 @@ class Board:
         self.numbers_list = [] 
         #number on the board
         self.numbers_on_list = []
-        #something
+        #to veirfy if the list before were filled up
         self.first_time = True 
     
     def get_number(self, row: int, col: int) -> int:
@@ -112,7 +112,6 @@ class Board:
         #verifies if the adj numbers are continues, like for example 4 5 6
         actions = []
         if(adj_vert[0] != None):
-            #print("ENTREI1!")
             if(number == (adj_vert[0] + 1) or number == (adj_vert[0] - 1)):
                 if(adj_vert[1] != None):
                     if(number == (adj_vert[1] + 1) or number == (adj_vert[1] - 1)):
@@ -127,7 +126,6 @@ class Board:
                     actions.append((i,j,number))
 
         if(adj_vert[1] != None):
-            #print("ENTREI2!")
             if(number == (adj_vert[1] + 1) or number == (adj_vert[1] - 1)):
                 if(adj_vert[0] != None):
                     if(number == (adj_vert[0] + 1) or number == (adj_vert[0] - 1)):
@@ -142,7 +140,6 @@ class Board:
                     actions.append((i,j,number))
         
         if(adj_horiz[0] != None):
-            #print("ENTREI3!")
             if(number == (adj_horiz[0] + 1) or number == (adj_horiz[0] - 1)):
                 if(adj_vert[1] != None):
                     if(number == (adj_vert[1] + 1) or number == (adj_vert[1] - 1)):
@@ -157,7 +154,6 @@ class Board:
                     actions.append((i,j,number))
         
         if adj_horiz[1] != None :
-            #print("ENTREI4!")
             if(number == (adj_horiz[1] + 1) or number == (adj_horiz[1] - 1)):
                 if(adj_vert[1] != None):
                     if(number == (adj_vert[1] + 1) or number == (adj_vert[1] - 1)):
@@ -173,16 +169,14 @@ class Board:
                 
                 if(number == self.N*self.N or number == 1):
                     actions.append((i,j,number))
-        #print("ACTIONS4: {0}".format(actions))
         return actions
 
     def verify_possible_pos(self, adj_number, coord , number, number_next_on, i, j):
-        #verifica a posicao adj
         if (i<0 or j<0):
             return False
 
         #Manhattan distance
-        if(adj_number == 0): # se for uma posiçao possivel para por o numero seguinte
+        if(adj_number == 0):
             md_aux = abs(i-coord[0]) + abs(j-coord[1])
             if(md_aux <= abs(number - number_next_on)-1):
                 return True
@@ -204,39 +198,29 @@ class Board:
             self.set_numbers_list()
             self.first_time = False
 
-        #ordenar a lista dos numero que ja estao no board
         self.numbers_on_list.sort()
         for i in range(self.N):
             for j in range(self.N):
                 
                 if self.get_number(i,j) != 0 and self.get_number(i,j) + 1 in self.numbers_list:
-                    #print("------------------------")
-                    #print(" linha: {0} coluna: {1}".format(i,j)) 
-                    #print("entrei no 1 if")
-                    #print("Encontrei o numero: {0} ".format(self.get_number(i,j)))
                     
                     idx = self.numbers_on_list.index(self.get_number(i,j))
                     
                     if(idx <= len(self.numbers_on_list) - 2):
-                        #get the coordinates (on the board) of the number above the number we are seeing
-                        #print("as coordenadas do numero {0} sao {1}".format(self.numbers_on_list[idx + 1], self.search_number_board(self.numbers_on_list[idx + 1])))
+                        #get the coordinates (on the board) of the number + 1 that we are seeing
                         coord =  self.search_number_board(self.numbers_on_list[idx + 1])
                     
                         adj_vert = self.adjacent_vertical_numbers(i,j)
 
                         adj_horiz = self.adjacent_horizontal_numbers(i,j)
 
-                        #verificar posicao a esquerda
-                        #print("entrar na  pos1")
+                        #left position
                         flag_pos1 = self.verify_possible_pos(adj_horiz[0], coord, self.get_number(i,j),self.numbers_on_list[idx + 1], i, j-1)
-                        #verificar posicao a direita
-                        #print("entrar na  pos2")
+                        #right position
                         flag_pos2 = self.verify_possible_pos(adj_horiz[1], coord, self.get_number(i,j),self.numbers_on_list[idx + 1], i, j+1)
-                        #verificar posicao a baixo
-                        #print("entrar na  pos3")
+                        #down position
                         flag_pos3 = self.verify_possible_pos(adj_vert[0], coord, self.get_number(i,j),self.numbers_on_list[idx + 1], i+1, j)
-                        #verificar posicao a cima
-                        #print("entrar na  pos4")
+                        #up position
                         flag_pos4 = self.verify_possible_pos(adj_vert[1], coord, self.get_number(i,j),self.numbers_on_list[idx + 1], i-1, j)
 
                         if(flag_pos1):
@@ -248,24 +232,15 @@ class Board:
                         if(flag_pos4):
                             actions.append((i-1,j,self.get_number(i,j)+1))
 
-                        #verificar se pela distancia de matham conseguimos chegar a conclusoes ou nao
-                        #print(self.to_string()) 
-                        #print("ACTIONS1: {0}".format(actions))
                         return actions
 
-                    #o ultimo numero de numbers_on_list
+                    #last number of numbers_on_list
                     elif idx == len(self.numbers_on_list) - 1:
-                        #print("------------------------")
-                        #print(" linha: {0} coluna: {1}".format(i,j)) 
-                        #print("entrei no 2 if")
-                        #print("tou com: {0} ".format(self.numbers_on_list[idx]))
-                        #print(self.numbers_on_list[idx])
 
                         adj_vert = self.adjacent_vertical_numbers(i,j)
 
                         adj_horiz = self.adjacent_horizontal_numbers(i,j)
 
-                        #print("adj_vert {0}  adj_horiz {1}".format(adj_vert,adj_horiz))
                         if(self.numbers_on_list[idx] != self.N*self.N):
                             if(adj_horiz[0] == 0 and not self.is_island_pos(i,j-1)):
                                 actions.append((i,j-1,self.get_number(i,j)+1))
@@ -276,41 +251,27 @@ class Board:
                             if(adj_vert[1] == 0 and not self.is_island_pos(i-1,j)):
                                 actions.append((i-1,j,self.get_number(i,j)+1))
 
-                        #print(self.to_string())
-                        #print("num_list: {0}".format(self.numbers_list))
-                        #print("num_on_list: {0}".format(self.numbers_on_list))
-                        #print(self.to_string()) 
-                        #print("ACTIONS2: {0}".format(actions))
                         return actions
                 
                 if self.get_number(i,j) != 0 and self.get_number(i,j) - 1 in self.numbers_list:
-                    #print("------------------------")
-                    #print(" linha: {0} coluna: {1}".format(i,j)) 
-                    #print("entrei no 4 if")
-                    #print("Encontrei o numero: {0} ".format(self.get_number(i,j)))
                     
                     idx = self.numbers_on_list.index(self.get_number(i,j))
                     
                     if(idx <= len(self.numbers_on_list) - 2):
-                        #get the coordinates (on the board) of the number above the number we are seeing
-                        #print("as coordenadas do numero {0} sao {1}".format(self.numbers_on_list[idx + 1], self.search_number_board(self.numbers_on_list[idx + 1])))
+                        #get the coordinates (on the board) of the number + 1 that we are seeing
                         coord =  self.search_number_board(self.numbers_on_list[idx - 1])
                     
                         adj_vert = self.adjacent_vertical_numbers(i,j)
 
                         adj_horiz = self.adjacent_horizontal_numbers(i,j)
 
-                        #verificar posicao a esquerda
-                        #print("entrar na  pos1")
+                        #left position
                         flag_pos1 = self.verify_possible_pos(adj_horiz[0], coord, self.get_number(i,j),self.numbers_on_list[idx - 1], i, j-1)
-                        #verificar posicao a direita
-                        #print("entrar na  pos2")
+                        #right position
                         flag_pos2 = self.verify_possible_pos(adj_horiz[1], coord, self.get_number(i,j),self.numbers_on_list[idx - 1], i, j+1)
-                        #verificar posicao a baixo
-                        #print("entrar na  pos3")
+                        #down position
                         flag_pos3 = self.verify_possible_pos(adj_vert[0], coord, self.get_number(i,j),self.numbers_on_list[idx - 1], i+1, j)
-                        #verificar posicao a cima
-                        #print("entrar na  pos4")
+                        #up position
                         flag_pos4 = self.verify_possible_pos(adj_vert[1], coord, self.get_number(i,j),self.numbers_on_list[idx - 1], i-1, j)
 
                         if(flag_pos1):
@@ -322,33 +283,20 @@ class Board:
                         if(flag_pos4):
                             actions.append((i-1,j,self.get_number(i,j)-1))
 
-                        #verificar se pela distancia de matham conseguimos chegar a conclusoes ou nao
-                        #print(self.to_string()) 
-                        #print("ACTIONS4: {0}".format(actions))
                         return actions
 
 
-                #print("e ilha??? {0}".format(self.is_island_pos(i, j)))
                 #for the last positions that are like islands
                 elif  self.get_number(i,j) == 0 and self.is_island_pos(i, j) :
-                    #print("------------------------")
-                    #print(" linha: {0} coluna: {1}".format(i,j)) 
-                    #print(self.is_island_pos(i, j))
-                    #print("entrei no 3 if")
                     adj_vert = self.adjacent_vertical_numbers(i,j)
                     adj_horiz = self.adjacent_horizontal_numbers(i,j)
                     
                     for g in range(len(self.numbers_list)):
 
-                        #print("g: {0} ".format(g) )
-                        #print("self.numbers_list[g]: {0}".format(self.numbers_list[g]) )
-
                         actions = self.verify_adj_numbers_pos(i,j,adj_vert,adj_horiz,self.numbers_list[g])
                         if(len(actions) != 0):
                             return actions
 
-                    #print(self.to_string()) 
-                    #print("ACTIONS3: {0}".format(actions))
                     return actions
         return []       
       
@@ -411,7 +359,6 @@ class Board:
         #for each N line take the numbers and puts them in board
         for k in range(N):
             line = file.readline()
-            #print(line)
             board.append([])
             for i in range(len(line)):
                 if line[i] != '\t' and line[i] != '\n':
@@ -422,7 +369,6 @@ class Board:
             board_index+=1 
 
         file.close()
-        #print(board)
         return Board(board)
 
 class Numbrix(Problem):
@@ -440,14 +386,9 @@ class Numbrix(Problem):
         'state' passado como argumento. A ação a executar deve ser uma
         das presentes na lista obtida pela execução de 
         self.actions(state). """
-        #actions = self.actions(state)
         new_state = copy.deepcopy(NumbrixState(state.board))
-        #if(action in actions):
         new_state.do_action(action)
         return new_state
-        #else:
-            #print("This action is not possible.\n")
-            #raise ValueError('This action is not possible.\n')
 
     def goal_test(self, state: NumbrixState):
         """ Retorna True se e só se o estado passado como argumento é
@@ -458,38 +399,16 @@ class Numbrix(Problem):
     def h(self, node: Node):
         """ Função heuristica utilizada para a procura A*. """
         board = node.state.board
-        board.set_numbers_list()
-        smallest_number_played = board.numbers_on_list[0]
-        aux0 = board.N * board.N
-        aux1 = 0
-        j = 0
-        x1=0
-        x2=0
-        y1=0
-        y2=0
-        for i in range(len(board.numbers_on_list)):
-            aux1 = board.numbers_on_list[i] - smallest_number_played
-            if (aux0 > aux1):
-                aux0 = copy.deepcopy(aux1)
-                j = i
-        for y in range(board.N):
-            for x in range(board.N):
-                if board.board_grid[y][x] == smallest_number_played:
-                    x1 = x
-                    y1 = y
-                if board.board_grid[y][x] == board.numbers_on_list[j]:
-                    x2 = x
-                    y2 = y
-        h = ( (x1 - x2)**2 + (y1 - y2)**2 )**2
+        #counter of zeros
+        h = 0
+        for i in range(board.N):
+            for j in range(board.N):
+                if(board.get_number(i,j) == 0):
+                    h += 1
         return h
     
 if __name__ == "__main__":
-    # TODO:
-    # Ler o ficheiro de input de sys.argv[1], 
-    # Usar uma técnica de procura para resolver a instância, 
-    # Retirar a solução a partir do nó resultante, 
-    # Imprimir para o standard output no formato indicado.
-
+    
     # Ler o ficheiro de input de sys.argv[1]
     if len(sys.argv) >= 2:
 	    filename = sys.argv[1]
@@ -500,18 +419,17 @@ if __name__ == "__main__":
 
     problem = Numbrix(init_board)
 
-    # Obter o nó solução usando a procura A*:
-    goal_node = depth_first_graph_search(problem)
-    
-    #goal_node = breadth_first_tree_search(problem)
-    # Verificar se foi atingida a solução
-    #print("Is goal?", problem.goal_test(goal_node.state))
+    start = time.time() #remove me
 
-    start = time.time()
+    # Usar uma técnica de procura para resolver a instância, 
+    # Retirar a solução a partir do nó resultante, 
+    goal_node = greedy_search(problem)
     
+    # Imprimir para o standard output no formato indicado.
     print(goal_node.state.board.to_string(),end="", sep="")
 
-    end = time.time()
+    end = time.time() #remove me
  
     #print("The time of execution of above program is :", end-start)
+
 
